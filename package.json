@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "babel-node": "babel-node --presets=es2015 --ignore='foo|bar|baz'",
+    "babel-node": "babel-node --presets=es2015",
     "start": "nodemon --exec npm run babel-node -- server/server.js"
   },
   "keywords": [],
