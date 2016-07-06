@@ -1,15 +1,19 @@
-var express = require('express');
-var webpackDevMiddleware = require("webpack-dev-middleware");
-var webpackHotMiddleware = require("webpack-hot-middleware");
-var webpack = require('webpack');
-var webpackConfig = require('../webpack.config.js');
-var path = require('path');
+import Game from './game.js';
+import Network from './network.js';
 
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+const express = require('express');
+const webpackDevMiddleware = require("webpack-dev-middleware");
+const webpackHotMiddleware = require("webpack-hot-middleware");
+const webpack = require('webpack');
+const webpackConfig = require('../webpack.config.js');
+const path = require('path');
 
-var compiler = webpack(webpackConfig);
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+// ######### this is all webpack stuff #############
+const compiler = webpack(webpackConfig);
 
 app.use(webpackDevMiddleware(compiler, {
   hot: true,
@@ -30,14 +34,17 @@ app.use(webpackHotMiddleware(compiler, {
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/www/index.html');
 });
+// #################################################
+// ######### here starts the game stuff ############
 
-io.on('connection', function(socket){
-  console.log('a user connected');
-});
+let game = new Game();
+const connections = new Network(io, game);
+connections.setup();
+game.start();
 
-var server = http.listen(3000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
+const server = http.listen(3000, function () {
+  const host = server.address().address;
+  const port = server.address().port;
 
   console.log('Example app listening at http://%s:%s', host, port);
 });
