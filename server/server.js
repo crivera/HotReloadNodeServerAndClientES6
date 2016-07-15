@@ -1,4 +1,5 @@
 import Game from './game.js';
+import GameMap from '../common/maps/map1.js';
 import Network from './network.js';
 
 const express = require('express');
@@ -31,13 +32,22 @@ app.use(webpackHotMiddleware(compiler, {
   heartbeat: 10 * 1000,
 }));
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/www/index.html');
+});
+
+app.get('/states', (req, res) => {
+  res.sendFile(__dirname + '/www/states.html');
+});
+
+app.get('/states/info', (req, res) => {
+  res.send(game.states);
 });
 // #################################################
 // ######### here starts the game stuff ############
 
-let game = new Game();
+let map = new GameMap();
+let game = new Game(map);
 const connections = new Network(io, game);
 connections.setup();
 game.start();

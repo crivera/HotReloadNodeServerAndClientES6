@@ -1,6 +1,7 @@
 import Event from 'events';
 
 import * as Constants from '../common/constants.js';
+import * as Utils from '../common/utils.js';
 
 export default class Network{
 	constructor(game){
@@ -21,12 +22,11 @@ export default class Network{
 		this.socket.on(Constants.NEW_PLAYER, (playerData) => {
 			self.game.start(playerData);
 			self.gameRunning = true;
-			this.sendPlayerUpdates();
 		});
 
 		// figure out latency
 		this.socket.on(Constants.PONG, () => {
-			let currentTime = Date.now();
+			let currentTime = Utils.now();
 			self.currentPing = currentTime - self.lastPingTime;
 			self.game.setPing(self.currentPing);	
 			setTimeout(self.ping.bind(self), 1000);
@@ -37,22 +37,30 @@ export default class Network{
 		this.socket.on(Constants.GAME_UPDATE, (data) => {
 			if (!self.gameRunning)
 				return;
-			let players = data.players;
-			self.game.setPlayers(players);
+			self.game.updatePlayers(data.players);
+			self.game.updateCurrentPlayer(data.currentPlayer);
+			self.game.updateWalls(data.walls);
+			self.game.updateBullets(data.bullets);
 		});
 
+		window.addEventListener('playerUpdate', (event) => {
+			let updates = self.game.getPlayerUpdates();
+			if (updates.player){
+				this.socket.emit(Constants.PLAYER_UPDATE, updates);
+			}
+		});
+
+		window.addEventListener('fired', (event) => {
+			let updates = self.game.getBulletData();
+			if (updates.bullet){
+				this.socket.emit(Constants.PLAYER_UPDATE, updates);
+			}
+		});
 	}
 	
 	ping(){
-		this.lastPingTime = Date.now();
+		this.lastPingTime = Utils.now();
 		this.socket.emit(Constants.PING);
 	}
 
-	sendPlayerUpdates(){ 
-		let updates = this.game.getPlayerUpdates();
-		if (updates.player){
-			this.socket.emit(Constants.PLAYER_UPDATE, updates);
-		}
-		setTimeout(this.sendPlayerUpdates.bind(this), (1000 / this.tickrate));
-	}
 }

@@ -1,6 +1,8 @@
 import * as Constants from '../common/constants.js';
+import * as Validation from '../common/validation.js';
 
-export default class IO {
+export default class Network {
+	
 	constructor(io, game){
 		this.io = io;
 		this.sockets = new Map();
@@ -30,7 +32,15 @@ export default class IO {
 
 			// handle player updates
 			socket.on(Constants.PLAYER_UPDATE, (updates) => {
-				self.game.updatePlayer(updates.player)
+				if (Validation.checkDataComingFromPlayer(updates)){
+					if (updates.player)
+						self.game.addInputs(updates);
+					if (updates.bullet)
+						self.game.addBullet(updates);
+				} else {
+					// add kick logic
+					socket.emit(Constants.KICK, {'message': 'Input is off. You are cheating'});
+				}
 			});
 		});
 		

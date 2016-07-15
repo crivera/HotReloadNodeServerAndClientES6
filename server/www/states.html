@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>States</title>
+	</head>
+	<body>
+		<table id="statesTable" border="1">
+			<thead></thead>
+			<tbody>
+				
+			</tbody>
+		</table>
+		<script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+		<script type="text/javascript">
+			function getStates(){
+				$.get('/states/info', function(data){
+					
+					var tableBody = $("#statesTable tbody");
+					$.each(data, function(i, state){
+						if (state.endDate && $("#" + state.startDate).length == 0){
+							var playerHtml = "";
+							$.each(state.player, function(j, player){
+								playerHtml += "<div>id: " + player.id + "</div>"
+								playerHtml += "<div>x: " + player.x + " y: " + player.y + "</div>"
+								playerHtml += "<br/>";
+							});
+							tableBody.append("<tr id='"+state.startDate+"'><td>"+state.startDate+"<td/><td>"+playerHtml+"<td/></tr>");
+						}
+						
+					})
+				});
+			}
+
+			setInterval(getStates, 1000);
+		</script>
+	</body>
+</html>
